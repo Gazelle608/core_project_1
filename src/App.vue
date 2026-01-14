@@ -330,7 +330,7 @@ export default {
       // Sample payroll data
       this.appState.payroll = [
         {
-          employeeId: 1001,
+          employeeId: 1001 ,
           hoursWorked: 160,
           leaveDeductions: 0,
           finalSalary: 85000
