@@ -35,7 +35,7 @@
             <li class="nav-item">
               <router-link class="nav-link" to="/leaves">
                 <i class="bi bi-calendar-event me-1"></i>
-                Leave Requests
+                Leave Request
               </router-link>
             </li>
             <li class="nav-item">

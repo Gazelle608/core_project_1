@@ -11,7 +11,7 @@
             <div class="text-primary mb-2">
               <i class="bi bi-people display-6"></i>
             </div>
-            <h5 class="card-title text-muted">Employees</h5>
+            <h5 class="card-title text-muted">Employes</h5>
             <h2 class="mb-0">{{ totalEmployees }}</h2>
             <p class="card-text small mt-2 text-muted">Active staff</p>
           </div>

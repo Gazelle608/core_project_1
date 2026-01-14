@@ -13,7 +13,7 @@
             </div>
             <h5 class="card-title text-muted">Pending</h5>
             <h2 class="mb-0">{{ pendingRequests.length }}</h2>
-            <p class="card-text small mt-2 text-muted">Awaiting approval</p>
+            <p class="card-text small mt-2 text-muted">Awaiting aproval</p>
           </div>
         </div>
       </div>

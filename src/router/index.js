@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../components/Dashboard.vue'
 import EmployeeList from '../components/EmployeeList.vue'
 import Payroll from '../components/Payroll.vue'
-// import Attendance from '../components/Attendance.vue'
 import LeaveRequests from '../components/LeaveRequest.vue'
 import PerformanceReviews from '../components/PerformanceReviews.vue'
 /* eslint-disablex   */

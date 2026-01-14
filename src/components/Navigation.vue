@@ -14,7 +14,7 @@
             <router-link class="nav-link" to="/payroll" active-class="active">Payroll</router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/attendance" active-class="active">Attendance</router-link>
+            <router-link class="nav-link" to="/attendance" active-class="active">Atendance</router-link>
           </li>
           <li class="nav-item">
             <router-link class="nav-link" to="/leaves" active-class="active">Time Off</router-link>

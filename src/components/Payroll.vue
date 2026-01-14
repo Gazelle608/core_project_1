@@ -52,7 +52,7 @@
           <i class="bi bi-calculator me-2"></i>
           Process Payroll
         </button>
-        <p class="text-muted mt-2">Automatically calculate payroll for all employees</p>
+        <p class="text-muted mt-2">Automatically calculate payrol for all employees</p>
       </div>
     </div>
     

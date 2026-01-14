@@ -13,7 +13,7 @@
             </div>
             <h5 class="card-title text-muted">Total Reviews</h5>
             <h2 class="mb-0">{{ reviews.length }}</h2>
-            <p class="card-text small mt-2 text-muted">Digital reviews</p>
+            <p class="card-text small mt-2 text-muted">Digital review</p>
           </div>
         </div>
       </div>
