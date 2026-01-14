@@ -336,49 +336,140 @@ Now it's integrated with all other employee data.
 </script>
 
 <style scoped>
+body{
+  background-color: #f5f7fa;
+  font-family: "Inter","poppins","Segoe UI",sans-serif;
+  color: #2c2c2c;
+}
+
+/*Page Title*/
+h2{
+  font-weight: 700;
+  color: #2c2c2c;
+  letter-spacing: 0.3px;
+}
+
+.text-muted{
+  color: #6c757d !important;
+}
+
+/*CARD STYLIG*/
 .card {
   border: none;
-  box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.08);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
 }
 
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+}
 .card-header {
-  background-color: white;
-  border-bottom: 1px solid #eef2f7;
-}
-
-.table-hover tbody tr:hover {
   background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  font-weight: 600;
+  font-size: 1.1rem;
 }
 
+/*search input*/
+
+.input-group-text {
+  background-color: #e9ecef;
+  border: none;
+  border-radius: 8px 0 0 8px;
+}
+
+.form-control {
+  border: 1px solid #e9ecef;
+  border-radius: 0 8px 8px 0;
+  box-shadow: none;
+}
+
+.form-control:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+} 
+
+/*EMPLOYEE AVATAR*/
 .employee-avatar {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
+  background-color: #3498db;
+  color: #fff;
+  display: flex; 
+  align-items: center; 
   justify-content: center;
-  color: white;
   font-weight: 600;
   font-size: 0.9rem;
+  text-transform: uppercase;
+
 }
 
-.dept-color-indicator {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
+.employee-avatar:hover {
+  background-color: #2980b9;
+  cursor: default;
+}   
+
+.badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px;
+  border-radius: 12px;
 }
 
-.border-warning {
-  border-color: #ffc107 !important;
+.badge.bg-primary {
+  background-color: #3498db;
+}
+.badge.bg-info {
+  background-color: #1abc9c;
+} 
+.badge.bg-success {
+  background-color: #2ecc71;
 }
 
-.border-success {
-  border-color: #198754 !important;
+/*BUTTOONS*/
+.btn{
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;  
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+  background-color: #3498db;
+  color: #fff;
+  border-color: #2980b9;
+}
+.btn-outline-warning:hover {
+  background-color: #f39c12;
+  color: #fff;
+  border-color: #e67e22;
+}
+.btn-outline-info:hover {
+  background-color: #1abc9c;
+  color: #fff;  
+  border-color: #16a085;
 }
 
 .btn-group-sm .btn {
-  padding: 0.25rem 0.5rem;
+  padding: 0.3rem 0.55rem;
+}
+
+/*Employee history summary*/
+
+.border {
+  border: 1px solid #e9ecef !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border-radius: 12px;
+} 
+
+.border:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+  transition: 0.3;
 }
 
 .text-truncate {
@@ -386,4 +477,81 @@ Now it's integrated with all other employee data.
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/*Empty State*/ 
+.text-center i{
+  opacity: 0.4;
+}
+
+.text-center h5{
+  color: #7f8c8d;
+font-weight: 600;
+}
+
+
+/*Small Detail & transition*/ 
+.small {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+.table td {
+  vertical-align: middle;
+
+}
+.card-body{
+  transition: all 0.2s ease-in-out ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </style>
