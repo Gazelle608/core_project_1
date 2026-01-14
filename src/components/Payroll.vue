@@ -385,14 +385,181 @@ No manual spreadsheet formulas required.
 </script>
 
 <style scoped>
-.card {
-  border: none;
-  box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.08);
+  body {
+    background-color: #f8f9fa;
+  }
+  /*page Title*/ 
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  /*cards glass + hover effect */
+  .card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: none;
+    box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1)rgba(0, 0, 0, 12);
+
+  }
+
+
+/* Card Header*/
+.card-header {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid #eef2f7;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(135deg, #1e3c1e,#2a6a2a);
+  color: #f8f9fa;
+  font-weight:600;
+  letter-spacing: 0.4px;
 }
 
-.card-header {
+/*stat Cards*/
+.card.display-6 {
+  font-size: 2.5rem;
+}
+
+.text-primary {
+  color: #2a6a2a !important;
+}
+
+.text-success {
+  color: #198754 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+/*Payroll Action Button*/
+.btn-success {
+  background-color: #198754;
+  border-color: #198754;
+  border-radius: 30px;
+  padding: 0.75rem 2.2rem;
+  font-size: 1.1rem;
+  box-shadow: 0.6px 0.6px 8px rgba(25, 135, 84, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: #15734d;
+  border-color: #15734d;
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.6);
+}
+
+/*Table styling */
+table {
+  font-size: 0.95rem;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+}
+
+.table{
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0.6px 18px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  border-bottom: none;
+  font-weight: 00;
+  color: #2c3e50;
+}
+
+.table tbody tr {
   background-color: white;
-  border-bottom: 1px solid #eef2f7;
+  border-radius: 12px;
+  box-shadow: 0.6px 8px 8px rgba(0, 0, 0, 0.03);
+  transition: transform 0.3s ease;
+}
+
+.table tbody tr:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+  border: none;}
+
+  .employee-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #1e3c1e 0%, #2a6a2a 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+
+  /*Badgess (salary Difference)*/
+  .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  .bg-success {
+    background: linear-gradient(135deg, #198754 0%, #15734d 100%);
+
+  }
+  .bg-danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+  }
+  .bg-secondary {
+    background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+    color: white;
+  } 
+  /*icons Animation*/
+  .bi {
+    transition: transform 0.3s ease;
+  }
+  .bi:hover {
+    transform: scale(1.2);
+  }
+
+
+
+/*SUMMARY BOXES*/
+.border{
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.5));
+  box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.08);
+
+}
+
+/*responsive impovements*/
+@media(max-width: 768px) {
+  .employee-avatar {
+    width: 35px;
+    height: 35px;
+    font-size: 0.75rem;
+  }
+
+  .btn-success {
+    padding: 0.5rem 1.5rem;
+    font-size: 1rem;
+  }
 }
 
 .table-hover tbody tr:hover {
