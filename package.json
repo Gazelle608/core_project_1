@@ -1,0 +1,27 @@
+{
+  "name": "hr-dashboard-system",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Modern HR Dashboard System",
+  "author": "ModernTech Solutions",
+  "private": true,
+  "scripts": {
+    "dev": "vite --port 3000 --force",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.0",
+    "bootstrap-icons": "^1.11.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.3",
+    "vite": "^7.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
