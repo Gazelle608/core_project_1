@@ -117,7 +117,3 @@ export default defineConfig({
 ## 🤝 Contributing
 
 - Feel free to open issues or submit PRs to improve error handling, add tests, or enhance the dataset.
-
----
-
-If you want, I can add the `@` alias to `vite.config.js` and add a few small defensive checks in the components for NaN/empty arrays. Would you like me to do that now? ✅

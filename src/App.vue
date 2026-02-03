@@ -44,6 +44,11 @@
               <span>Performance</span>
             </router-link>
           </div>
+
+          <div class="d-flex align-items-center ms-3">
+            <router-link v-if="!isAuthenticated" class="nav-link text-white px-3 py-2" to="/login">Login</router-link>
+            <button v-else class="btn btn-outline-light btn-sm" @click="handleLogout">Logout</button>
+          </div>
         </div>
       </div>
     </nav>
@@ -83,8 +88,24 @@
 </template>
 
 <script>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from './stores'
+
 export default {
-  name: 'App'
+  name: 'App',
+  setup() {
+    const { state, logout } = useStore()
+    const isAuthenticated = computed(() => state.auth.isAuthenticated)
+    const router = useRouter()
+
+    const handleLogout = () => {
+      logout()
+      router.push('/login')
+    }
+
+    return { isAuthenticated, handleLogout }
+  }
 }
 </script>
 

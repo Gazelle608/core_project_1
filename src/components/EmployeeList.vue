@@ -6,10 +6,35 @@
         <h1 class="h2 fw-bold mb-2" style="color: #2d3748;">Employee Directory</h1>
         <p class="text-muted mb-0">Manage and view all employee information</p>
       </div>
-      <button class="btn btn-primary d-flex align-items-center">
-        <i class="bi bi-plus-circle me-2"></i>
-        Add Employee
-      </button>
+      <div>
+        <button class="btn btn-primary d-flex align-items-center" @click="showAddForm = !showAddForm">
+          <i class="bi bi-plus-circle me-2"></i>
+          Add Employee
+        </button>
+      </div>
+
+      <div v-if="showAddForm" class="card border-0 mt-3">
+        <div class="card-body">
+          <h5 class="mb-3">Add Employee</h5>
+          <div class="row g-2">
+            <div class="col-12 col-md-4">
+              <input v-model="newEmployee.name" class="form-control" placeholder="Name" />
+            </div>
+            <div class="col-12 col-md-3">
+              <input v-model="newEmployee.position" class="form-control" placeholder="Position" />
+            </div>
+            <div class="col-12 col-md-2">
+              <input v-model="newEmployee.department" class="form-control" placeholder="Department" />
+            </div>
+            <div class="col-12 col-md-2">
+              <input v-model.number="newEmployee.salary" class="form-control" placeholder="Salary" />
+            </div>
+            <div class="col-12 col-md-1 d-flex">
+              <button class="btn btn-success w-100" @click="addEmployee">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -70,7 +95,7 @@
         <div class="d-flex gap-2">
           <select v-model="selectedDept" class="form-select form-select-sm w-auto">
             <option value="">All Departments</option>
-            <option v-for="dept in departments" :key="dept">{{ dept }}</option>
+            <option v-for="dept in departmentsComputed" :key="dept">{{ dept }}</option>
           </select>
           <input v-model="searchQuery" type="text" class="form-control form-control-sm" placeholder="Search employees..." style="width: 200px;">
         </div>
@@ -118,13 +143,13 @@
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary" title="View Details">
+                    <button class="btn btn-outline-primary" title="View Details" @click="viewDetails(employee)">
                       <i class="bi bi-eye"></i>
                     </button>
-                    <button class="btn btn-outline-success" title="Edit">
+                    <button class="btn btn-outline-success" title="Edit" @click="editEmployee(employee)">
                       <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-outline-info" title="Profile">
+                    <button class="btn btn-outline-info" title="Profile" @click.prevent="() => $router.push({ path: '/employees', query: { id: employee.employeeId } })">
                       <i class="bi bi-person"></i>
                     </button>
                   </div>
@@ -168,13 +193,60 @@
 </template>
 
 <script>
+import { ref } from 'vue'
+import { useStore } from '../stores'
+
 export default {
   name: 'EmployeeList',
-  inject: ['dataService'],
+  setup() {
+    const store = useStore()
+    const searchQuery = ref('')
+    const selectedDept = ref('')
+    const showAddForm = ref(false)
+    const newEmployee = ref({ name: '', position: '', department: '', salary: 0, contact: '' })
+
+    const departments = () => [...new Set(store.state.employees.map(e => e.department))]
+
+    const resetNew = () => {
+      newEmployee.value = { name: '', position: '', department: '', salary: 0, contact: '' }
+    }
+
+    const addEmployee = () => {
+      // Simple id generation
+      const nextId = Math.max(...store.state.employees.map(e => e.employeeId), 0) + 1
+      const emp = { employeeId: nextId, ...newEmployee.value }
+      // use store method
+      store.addEmployee(emp)
+      resetNew()
+      showAddForm.value = false
+    }
+
+    const viewDetails = (employee) => {
+      alert(`Name: ${employee.name}\nPosition: ${employee.position}\nDept: ${employee.department}\nContact: ${employee.contact}`)
+    }
+
+    const editEmployee = (employee) => {
+      const newName = prompt('Name', employee.name)
+      const newPosition = prompt('Position', employee.position)
+      if (newName !== null && newPosition !== null) {
+        store.updateEmployee(employee.employeeId, { name: newName, position: newPosition })
+      }
+    }
+
+    return {
+      store,
+      searchQuery,
+      selectedDept,
+      showAddForm,
+      newEmployee,
+      departments,
+      addEmployee,
+      viewDetails,
+      editEmployee,
+    }
+  },
   data() {
     return {
-      searchQuery: '',
-      selectedDept: '',
       departmentColors: {
         'Development': '#3498db',
         'HR': '#9b59b6',
@@ -190,17 +262,14 @@ export default {
   },
   computed: {
     employees() {
-      return this.dataService.getAllEmployees()
+      return this.store.state.employees
     },
     totalEmployees() {
       return this.employees.length
     },
-    departments() {
-      return [...new Set(this.employees.map(e => e.department))]
-    },
     avgSalary() {
       const total = this.employees.reduce((sum, emp) => sum + emp.salary, 0)
-      return Math.round(total / this.employees.length)
+      return Math.round(total / Math.max(1, this.employees.length))
     },
     avgTenure() {
       // Extract years from employment history (simplified)
@@ -208,7 +277,10 @@ export default {
         const year = this.extractYear(emp.employmentHistory)
         return sum + (year || 3) // Default to 3 years if can't extract
       }, 0)
-      return Math.round(totalYears / this.employees.length)
+      return Math.round(totalYears / Math.max(1, this.employees.length))
+    },
+    departmentsComputed() {
+      return this.departments()
     },
     filteredEmployees() {
       let filtered = this.employees
@@ -221,8 +293,8 @@ export default {
         const query = this.searchQuery.toLowerCase()
         filtered = filtered.filter(emp => 
           emp.name.toLowerCase().includes(query) ||
-          emp.position.toLowerCase().includes(query) ||
-          emp.department.toLowerCase().includes(query)
+          (emp.position || '').toLowerCase().includes(query) ||
+          (emp.department || '').toLowerCase().includes(query)
         )
       }
       
@@ -234,7 +306,7 @@ export default {
       return this.departmentColors[dept] || '#7f8c8d'
     },
     extractYear(history) {
-      const match = history.match(/\d{4}/)
+      const match = history && history.match(/\d{4}/)
       if (match) {
         const year = parseInt(match[0])
         const currentYear = new Date().getFullYear()

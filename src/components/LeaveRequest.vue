@@ -75,10 +75,24 @@
         </div>
         <h4 class="fw-bold mb-2">Submit New Leave Request</h4>
         <p class="text-muted mb-4">Replace email requests with digital submissions</p>
-        <button class="btn btn-primary btn-lg px-4">
+        <button class="btn btn-primary btn-lg px-4" @click="showNewForm = !showNewForm">
           <i class="bi bi-plus-circle me-2"></i>
           Create New Request
         </button>
+
+        <div v-if="showNewForm" class="mt-3 card p-3">
+          <div class="row g-2">
+            <div class="col-md-4">
+              <select class="form-select" v-model.number="newRequest.employeeId">
+                <option :value="null">Select Employee</option>
+                <option v-for="e in employees" :key="e.employeeId" :value="e.employeeId">{{ e.name }}</option>
+              </select>
+            </div>
+            <div class="col-md-3"><input type="date" v-model="newRequest.date" class="form-control" /></div>
+            <div class="col-md-3"><input v-model="newRequest.reason" class="form-control" placeholder="Reason" /></div>
+            <div class="col-md-2 d-flex"><button class="btn btn-success w-100" @click="createRequest">Submit</button></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -181,13 +195,56 @@
 </template>
 
 <script>
+import { ref } from 'vue'
+import { useStore } from '../stores'
+
 export default {
   name: 'LeaveRequest',
-  inject: ['dataService'],
+  setup() {
+    const store = useStore()
+    const filterStatus = ref('')
+    const showNewForm = ref(false)
+    const newRequest = ref({ employeeId: null, date: '', reason: '' })
+
+    const createRequest = () => {
+      if (!newRequest.value.employeeId || !newRequest.value.date || !newRequest.value.reason) return alert('Please fill all fields')
+      store.createLeaveRequest({ ...newRequest.value })
+      newRequest.value = { employeeId: null, date: '', reason: '' }
+      showNewForm.value = false
+      alert('Leave request submitted')
+    }
+
+    const approveRequest = (request) => {
+      if (confirm(`Approve leave request for ${request.employeeName}?`)) {
+        store.approveLeave({ employeeId: request.employeeId, date: request.date })
+        alert('Request approved!')
+      }
+    }
+
+    const denyRequest = (request) => {
+      if (confirm(`Deny leave request for ${request.employeeName}?`)) {
+        store.denyLeave({ employeeId: request.employeeId, date: request.date })
+        alert('Request denied!')
+      }
+    }
+
+    const viewDetails = (request) => {
+      alert(`Employee: ${request.employeeName}\nDate: ${request.date}\nReason: ${request.reason}\nStatus: ${request.status}`)
+    }
+
+    return {
+      store,
+      filterStatus,
+      showNewForm,
+      newRequest,
+      createRequest,
+      approveRequest,
+      denyRequest,
+      viewDetails
+    }
+  },
   data() {
     return {
-      filterStatus: '',
-      showNewForm: false,
       departmentColors: {
         'Development': '#3498db',
         'HR': '#9b59b6',
@@ -203,7 +260,7 @@ export default {
   },
   computed: {
     allRequests() {
-      return this.dataService.getLeaveRequests()
+      return this.store.state.leaveRequests
     },
     pendingRequests() {
       return this.allRequests.filter(req => req.status === 'Pending')
@@ -215,7 +272,7 @@ export default {
       return this.allRequests.filter(req => req.status === 'Denied')
     },
     employees() {
-      return this.dataService.getAllEmployees()
+      return this.store.state.employees
     },
     filteredRequests() {
       if (!this.filterStatus) return this.allRequests
@@ -247,18 +304,6 @@ export default {
       if (status === 'Approved') return 'bg-success bg-opacity-10 text-success'
       if (status === 'Pending') return 'bg-warning bg-opacity-10 text-warning'
       return 'bg-danger bg-opacity-10 text-danger'
-    },
-    approveRequest(request) {
-      if (confirm(`Approve leave request for ${request.employeeName}?`)) {
-        request.status = 'Approved'
-        alert('Request approved!')
-      }
-    },
-    denyRequest(request) {
-      if (confirm(`Deny leave request for ${request.employeeName}?`)) {
-        request.status = 'Denied'
-        alert('Request denied!')
-      }
     }
   }
 }

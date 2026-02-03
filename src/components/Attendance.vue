@@ -96,7 +96,7 @@
             <option value="">All Departments</option>
             <option v-for="dept in departments" :key="dept">{{ dept }}</option>
           </select>
-          <button class="btn btn-sm btn-primary">
+          <button class="btn btn-sm btn-primary" @click="markAllPresent">
             <i class="bi bi-plus-circle me-1"></i>
             Mark Attendance
           </button>
@@ -158,7 +158,7 @@
                     <button class="btn btn-outline-danger" @click="markAbsent(employee)" title="Mark Absent">
                       <i class="bi bi-x"></i>
                     </button>
-                    <button class="btn btn-outline-primary" title="View History">
+                    <button class="btn btn-outline-primary" @click="viewHistory(employee)" title="View History">
                       <i class="bi bi-clock-history"></i>
                     </button>
                   </div>
@@ -221,12 +221,40 @@
 </template>
 
 <script>
+import { ref } from 'vue'
+import { useStore } from '../stores'
+
 export default {
   name: 'Attendance',
-  inject: ['dataService'],
+  setup() {
+    const store = useStore()
+    const selectedDept = ref('')
+
+    const markPresent = (employee) => {
+      store.markPresent(employee.employeeId)
+      alert(`Marked ${employee.name} as present`)
+    }
+
+    const markAbsent = (employee) => {
+      store.markAbsent(employee.employeeId)
+      alert(`Marked ${employee.name} as absent`)
+    }
+
+    const markAllPresent = () => {
+      store.state.attendanceData.forEach(a => store.markPresent(a.employeeId))
+      alert('Marked all employees present for today')
+    }
+
+    const viewHistory = (employee) => {
+      const att = store.state.attendanceData.find(a => a.employeeId === employee.employeeId)
+      const recent = (att?.attendance || []).slice(-6).map(a => `${a.date}: ${a.status}`).join('\n') || 'No history'
+      alert(recent)
+    }
+
+    return { store, selectedDept, markPresent, markAbsent, markAllPresent, viewHistory }
+  },
   data() {
     return {
-      selectedDept: '',
       weekDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
       departmentColors: {
         'Development': '#3498db',
@@ -243,10 +271,10 @@ export default {
   },
   computed: {
     attendanceData() {
-      return this.dataService.getAttendanceData()
+      return this.store.state.attendanceData
     },
     employees() {
-      return this.dataService.getAllEmployees()
+      return this.store.state.employees
     },
     totalEmployees() {
       return this.employees.length
@@ -270,7 +298,7 @@ export default {
       return Math.floor(this.totalEmployees * 0.1)
     },
     attendanceRate() {
-      return Math.round((this.presentCount / this.totalEmployees) * 100)
+      return Math.round((this.presentCount / Math.max(1, this.totalEmployees)) * 100)
     },
     filteredAttendance() {
       let filtered = this.attendanceData
@@ -317,16 +345,18 @@ export default {
       return this.departmentColors[dept] || '#7f8c8d'
     },
     getTodayStatus(employee) {
-      const todayRecord = employee.attendance?.[employee.attendance.length - 1]
+      const att = this.attendanceData.find(a => a.employeeId === employee.employeeId)
+      const todayRecord = att?.attendance?.[att.attendance.length - 1]
       return todayRecord?.status || 'Not Recorded'
     },
     getThisWeek(employee) {
-      // Get last 5 days status
-      const recent = employee.attendance?.slice(-5) || []
+      const att = this.attendanceData.find(a => a.employeeId === employee.employeeId)
+      const recent = att?.attendance?.slice(-5) || []
       return recent.map(a => a.status.charAt(0)) // P for Present, A for Absent
     },
     getLastAttendanceDate(employee) {
-      const lastRecord = employee.attendance?.[employee.attendance.length - 1]
+      const att = this.attendanceData.find(a => a.employeeId === employee.employeeId)
+      const lastRecord = att?.attendance?.[att.attendance.length - 1]
       if (lastRecord) {
         return new Date(lastRecord.date).toLocaleDateString('en-ZA')
       }
@@ -341,14 +371,6 @@ export default {
       if (day === 'P') return 'bg-success bg-opacity-10 text-success'
       if (day === 'A') return 'bg-danger bg-opacity-10 text-danger'
       return 'bg-secondary bg-opacity-10 text-secondary'
-    },
-    markPresent(employee) {
-      alert(`Marked ${employee.name} as present`)
-      // In real app, this would update the data
-    },
-    markAbsent(employee) {
-      alert(`Marked ${employee.name} as absent`)
-      // In real app, this would update the data
     },
     getDayAttendance(dayIndex) {
       // Simplified - return random numbers for demo

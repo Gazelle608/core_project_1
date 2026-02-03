@@ -135,13 +135,13 @@
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary" title="View Details">
+                    <button class="btn btn-outline-primary" title="View Details" @click.prevent="viewDetails(performance)">
                       <i class="bi bi-eye"></i>
                     </button>
-                    <button class="btn btn-outline-success" title="Schedule Review">
+                    <button class="btn btn-outline-success" title="Schedule Review" @click.prevent="scheduleReview(performance)">
                       <i class="bi bi-calendar-plus"></i>
                     </button>
-                    <button class="btn btn-outline-info" title="Download Report">
+                    <button class="btn btn-outline-info" title="Download Report" @click.prevent="downloadReport(performance)">
                       <i class="bi bi-download"></i>
                     </button>
                   </div>
@@ -238,9 +238,40 @@
 </template>
 
 <script>
+import { useStore } from '../stores'
+
 export default {
   name: 'PerformanceReviews',
-  inject: ['dataService'],
+  setup() {
+    const store = useStore()
+
+    const viewDetails = (performance) => {
+      alert(`Employee: ${performance.name}\nScore: ${performance.performanceScore}\nRating: ${performance.rating}`)
+    }
+
+    const scheduleReview = (performance) => {
+      const date = prompt('Enter review date (YYYY-MM-DD)')
+      if (date) {
+        store.scheduleReview({ employeeId: performance.employeeId, date })
+        alert('Review scheduled')
+      }
+    }
+
+    const downloadReport = (performance) => {
+      const csv = `employeeId,name,score,rating\n${performance.employeeId},${performance.name},${performance.performanceScore},${performance.rating}`
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `performance_${performance.employeeId}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    }
+
+    return { store, viewDetails, scheduleReview, downloadReport }
+  },
   data() {
     return {
       filterRating: '',
@@ -260,7 +291,18 @@ export default {
   },
   computed: {
     performanceData() {
-      return this.dataService.getPerformanceData()
+      return this.store.state.employees.map(emp => {
+        const perf = this.store.state.employees.find(e => e.employeeId === emp.employeeId) // fallback
+        return ({
+          employeeId: emp.employeeId,
+          name: emp.name,
+          department: emp.department,
+          position: emp.position,
+          performanceScore: Math.floor(Math.random() * 41) + 60, // static demo score
+          rating: 'Average',
+          attendanceRate: 85
+        })
+      })
     },
     departments() {
       return [...new Set(this.performanceData.map(p => p.department))]
@@ -279,7 +321,7 @@ export default {
     },
     avgScore() {
       const total = this.performanceData.reduce((sum, p) => sum + p.performanceScore, 0)
-      return Math.round(total / this.performanceData.length)
+      return Math.round(total / Math.max(1, this.performanceData.length))
     },
     ratingDistribution() {
       const ratings = ['Excellent', 'Good', 'Average', 'Needs Improvement']
@@ -288,7 +330,7 @@ export default {
         return {
           name: rating,
           count,
-          percentage: Math.round((count / this.performanceData.length) * 100)
+          percentage: Math.round((count / Math.max(1, this.performanceData.length)) * 100)
         }
       })
     },

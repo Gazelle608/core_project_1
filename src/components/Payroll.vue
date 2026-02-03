@@ -92,11 +92,11 @@
           Payroll Details
         </h5>
         <div class="d-flex gap-2">
-          <button class="btn btn-sm btn-outline-primary">
+          <button class="btn btn-sm btn-outline-primary" @click="exportPayroll">
             <i class="bi bi-download me-1"></i>
             Export
           </button>
-          <button class="btn btn-sm btn-primary">
+          <button class="btn btn-sm btn-primary" @click="processPayroll">
             <i class="bi bi-send me-1"></i>
             Process Payroll
           </button>
@@ -162,13 +162,13 @@
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary" title="View Details">
+                    <button class="btn btn-outline-primary" title="View Details" @click.prevent="viewDetails(payroll)">
                       <i class="bi bi-eye"></i>
                     </button>
-                    <button class="btn btn-outline-success" title="Edit">
+                    <button class="btn btn-outline-success" title="Edit" @click.prevent="editPayroll(payroll)">
                       <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-outline-info" title="Download">
+                    <button class="btn btn-outline-info" title="Open in Google Sheets" @click.prevent="openInGoogleSheets(payroll)">
                       <i class="bi bi-download"></i>
                     </button>
                   </div>
@@ -222,9 +222,125 @@
 </template>
 
 <script>
+import { useStore } from '../stores'
+
 export default {
   name: 'Payroll',
-  inject: ['dataService'],
+  setup() {
+    const store = useStore()
+
+    const processPayroll = () => {
+      store.processPayroll()
+      alert('Payroll processed')
+    }
+
+    const buildFullPayrollCSV = (filterEmployeeId = null) => {
+      const headers = ['employeeId','employeeName','position','department','contact','baseSalary','hoursWorked','leaveDeductions','finalSalary','lastAttendance','attendanceRate','pendingLeaves','approvedLeaves']
+      const rows = store.state.payrollData
+        .filter(p => (filterEmployeeId === null) || p.employeeId === filterEmployeeId)
+        .map(p => {
+          const emp = store.state.employees.find(e => e.employeeId === p.employeeId) || {}
+          const att = store.state.attendanceData.find(a => a.employeeId === p.employeeId)
+          const lastAttendance = att?.attendance?.slice(-1)[0]?.date || ''
+          const totalDays = att?.attendance?.length || 0
+          const presentDays = att?.attendance?.filter(a => a.status === 'Present').length || 0
+          const attendanceRate = totalDays ? Math.round((presentDays / totalDays) * 100) : ''
+          const pendingLeaves = store.state.leaveRequests.filter(r => r.employeeId === p.employeeId && r.status === 'Pending').length
+          const approvedLeaves = store.state.leaveRequests.filter(r => r.employeeId === p.employeeId && r.status === 'Approved').length
+          const baseSalary = emp?.salary || ''
+
+          const values = [
+            p.employeeId,
+            emp.name || '',
+            emp.position || '',
+            emp.department || '',
+            emp.contact || '',
+            baseSalary,
+            p.hoursWorked || 0,
+            p.leaveDeductions || 0,
+            p.finalSalary || 0,
+            lastAttendance,
+            attendanceRate,
+            pendingLeaves,
+            approvedLeaves
+          ]
+
+          // Quote values to be CSV-safe
+          return values.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+        })
+      return [headers.join(','), ...rows].join('\n')
+    }
+
+    const exportPayroll = async () => {
+      const csv = buildFullPayrollCSV()
+      // Try copying to clipboard and open Google Sheets for quick paste
+      try {
+        await navigator.clipboard.writeText(csv)
+        const w = window.open('https://docs.google.com/spreadsheets/create', '_blank')
+        if (w) w.focus()
+        alert('Full payroll CSV copied to clipboard. A new Google Sheet was opened — paste (Ctrl+V) into the sheet to import, then use File → Print to print.')
+      } catch (e) {
+        // Fallback to download
+        const blob = new Blob([csv], { type: 'text/csv' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'payroll_export_full.csv'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        URL.revokeObjectURL(url)
+      }
+    }
+
+    const downloadPayslip = (payroll) => {
+      // Fallback file download of single payslip (detailed)
+      const csv = buildFullPayrollCSV(payroll.employeeId)
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `payslip_${payroll.employeeId}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    }
+
+    const openInGoogleSheets = async (payroll) => {
+      const csv = buildFullPayrollCSV(payroll.employeeId)
+      try {
+        await navigator.clipboard.writeText(csv)
+        const w = window.open('https://docs.google.com/spreadsheets/create', '_blank')
+        if (w) w.focus()
+        alert('Payslip CSV copied to clipboard. A new Google Sheet was opened — paste (Ctrl+V) into the sheet to import, then use File → Print to print.')
+      } catch (e) {
+        downloadPayslip(payroll)
+      }
+    }
+
+    const viewDetails = (payroll) => {
+      const emp = store.state.employees.find(e => e.employeeId === payroll.employeeId) || {}
+      alert(`Employee: ${emp.name || 'Unknown'}\nHours: ${payroll.hoursWorked}h\nDeductions: ${payroll.leaveDeductions}h\nFinal Salary: R ${payroll.finalSalary}`)
+    }
+
+    const editPayroll = (payroll) => {
+      const hoursStr = prompt('Hours worked (number of hours)', payroll.hoursWorked)
+      if (hoursStr === null) return
+      const deductionsStr = prompt('Leave deductions (hours)', payroll.leaveDeductions)
+      if (deductionsStr === null) return
+
+      const hours = parseInt(hoursStr, 10)
+      const deductions = parseInt(deductionsStr, 10)
+      if (Number.isNaN(hours) || Number.isNaN(deductions)) return alert('Invalid numbers')
+
+      store.updatePayroll(payroll.employeeId, { hoursWorked: hours, leaveDeductions: deductions })
+      store.processPayroll()
+      alert('Payroll entry updated')
+    }
+
+    return { store, processPayroll, exportPayroll, downloadPayslip, openInGoogleSheets, viewDetails, editPayroll }
+  },
   data() {
     return {
       departmentColors: {
@@ -242,22 +358,22 @@ export default {
   },
   computed: {
     payrollData() {
-      return this.dataService.getPayrollData()
+      return this.store.state.payrollData
     },
     employees() {
-      return this.dataService.getAllEmployees()
+      return this.store.state.employees
     },
     totalPayroll() {
       return this.payrollData.reduce((sum, p) => sum + p.finalSalary, 0)
     },
     avgSalary() {
-      return Math.round(this.totalPayroll / this.payrollData.length)
+      return Math.round(this.totalPayroll / Math.max(1, this.payrollData.length))
     },
     totalHours() {
       return this.payrollData.reduce((sum, p) => sum + p.hoursWorked, 0)
     },
     avgHours() {
-      return Math.round(this.totalHours / this.payrollData.length)
+      return Math.round(this.totalHours / Math.max(1, this.payrollData.length))
     },
     totalLeaveDeductions() {
       return this.payrollData.reduce((sum, p) => sum + p.leaveDeductions, 0)

@@ -1,6 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useStore } from '../stores'
 
 const routes = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../components/Login.vue')
+  },
   {
     path: '/',
     name: 'Dashboard',
@@ -36,6 +42,16 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// Simple navigation guard: require login for all routes except /login
+router.beforeEach((to, from, next) => {
+  const { state } = useStore()
+  if (to.path !== '/login' && !state.auth.isAuthenticated) {
+    next({ path: '/login' })
+  } else {
+    next()
+  }
 })
 
 export default router
